@@ -1,4 +1,4 @@
-import { configureStore } from "@reduxjs/toolkit";
+import {configureStore, Middleware} from "@reduxjs/toolkit";
 import { usersApi } from "../api/usersApi";
 import {loggerMiddleware} from "./loggerMiddleware";
 
@@ -7,9 +7,7 @@ export const store = configureStore({
         [usersApi.reducerPath]: usersApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(usersApi.middleware, loggerMiddleware),
+        getDefaultMiddleware().concat(usersApi.middleware, loggerMiddleware as Middleware)
 });
 
-// Типизация `RootState` и `AppDispatch`
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+
