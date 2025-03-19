@@ -1,52 +1,40 @@
 import { useState } from "react";
 import { useGetUsersQuery } from "../api/usersApi";
+import {User} from "../types/user.ts";
+import UserItem from "./UserItem.tsx";
+import UserForm from "./UserForm.tsx";
 
 function UsersList() {
     // Используем хук, который мы экспортировали из `usersApi.ts`
     const { data: users, error, isLoading } = useGetUsersQuery();
-
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
+    const [editingUser, setEditingUser] = useState<Partial<User> | undefined>(undefined);
+    // const [name, setName] = useState("");
+    // const [email, setEmail] = useState("");
 
     if (isLoading) return <p>Загрузка...</p>;
     if (error) return <p>Ошибка при загрузке данных</p>;
 
-    const generateAvatar = (name: string) => {
-        return `https://robohash.org/${name}-${Date.now()}.png`;
-    };
+    // const generateAvatar = (name: string) => {
+    //     return `https://robohash.org/${name}-${Date.now()}.png`;
+    // };
 
-    const handleCreateUser = async () => {
-
-    };
+    // const handleCreateUser = async () => {
+    //
+    // };
 
     return (
         <div>
             <h2>Список пользователей</h2>
             <ul>
                 {users?.map((user) => (
-                    <li key={user.id}>
-                        <img src={user.avatar} alt={user.name} width="50"/>
-                        <span>{user.name} - {user.email || "Нет email"}</span>
-                    </li>
+                    <UserItem key={user.id} user={user} onDelete={() => {}} onEdit={setEditingUser} />
                 ))}
             </ul>
 
-            <h2>Добавить нового пользователя</h2>
-            <input
-                type="text"
-                placeholder="Имя"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-            />
-            <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-            />
-            <button onClick={handleCreateUser}>Добавить</button>
+            <h2>{editingUser ? "Редактировать пользователя" : "Добавить нового пользователя"}</h2>
+            <UserForm onSubmit={() => {}} initialData={editingUser} />
         </div>
-
     );
 };
+
 export default UsersList;
