@@ -1,21 +1,39 @@
 
-import { useGetUsersQuery} from "../api/usersApi";
+import {useGetUsersQuery, useUpdateUserMutation} from "../api/usersApi";
 
 import UserItem from "./UserItem.tsx";
 import UserForm from "./UserForm.tsx";
 import {AnimatePresence, motion} from "framer-motion";
+import {useEffect, useState} from "react";
 
 function UsersList() {
     // Используем хук, который мы экспортировали из `usersApi.ts`
     const { data: users, error, isLoading } = useGetUsersQuery();
+    const [updateUser] = useUpdateUserMutation();
+    const [isUpdated, setIsUpdated] = useState(false); //  Флаг, чтобы обновление произошло только один раз
 
+    useEffect(() => {
+        if (users && !isUpdated) { //  Проверяем, чтобы обновить только при первой загрузке
+            const usersToUpdate = users.filter((user) => !user.isEdited); //  Фильтруем нужных пользователей
+
+            usersToUpdate.forEach((user) => {
+                updateUser({
+                    id: user.id,
+                    avatar: generateAvatar(user.name),
+                    isEdited: true, //  Теперь меняем флаг isEdited
+                });
+            });
+
+            setIsUpdated(true); // Устанавливаем флаг, чтобы не обновлять снова
+        }
+    }, [users, isUpdated, updateUser]); //  Завязываемся на users и флаг isUpdated
 
     if (isLoading) return <p>Загрузка...</p>;
     if (error) return <p>Ошибка при загрузке данных</p>;
 
-    // const generateAvatar = (name: string) => {
-    //     return `https://robohash.org/${name}-${Date.now()}.png`;
-    // };
+    const generateAvatar = (name: string) => {
+        return `https://robohash.org/${name}-${Date.now()}.png`;
+    };
 
     const listVariants = {
         hidden: { opacity: 0, y: 10 },

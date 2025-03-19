@@ -1,4 +1,5 @@
 export interface User {
+    isEdited: any;
     id: string;
     name: string;
     gender: string;
