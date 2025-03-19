@@ -1,29 +1,33 @@
 import { useState } from "react";
 import { User } from "../types/user";
+import { useDeleteUserMutation, useUpdateUserMutation } from "../api/usersApi";
 import EditableField from "./EditableField";
 
-interface UserItemProps {
-    user: User;
-    onDelete: (id: string) => void;
-    onEdit: (user: User) => void;
-}
-
-const UserItem: React.FC<UserItemProps> = ({ user, onDelete, onEdit }) => {
+const UserItem: React.FC<{ user: User }> = ({ user }) => {
     const [editedUser, setEditedUser] = useState<User>(user);
     const [isEditing, setIsEditing] = useState(false);
+    const [updateUser] = useUpdateUserMutation();
+    const [deleteUser] = useDeleteUserMutation();
 
     const handleFieldChange = (field: keyof User, newValue: string) => {
         setEditedUser((prev) => ({ ...prev, [field]: newValue }));
     };
 
-    const handleSave = () => {
-        onEdit(editedUser); // Сохраняем изменения
-        setIsEditing(false);
+    const handleSave = async () => {
+        try {
+            await updateUser(editedUser).unwrap();
+            setIsEditing(false);
+        } catch (error) {
+            console.error("Ошибка при обновлении:", error);
+        }
     };
 
-    const handleCancel = () => {
-        setEditedUser(user); // Отменяем изменения
-        setIsEditing(false);
+    const handleDelete = async () => {
+        try {
+            await deleteUser(user.id).unwrap();
+        } catch (error) {
+            console.error("Ошибка при удалении:", error);
+        }
     };
 
     return (
@@ -40,13 +44,13 @@ const UserItem: React.FC<UserItemProps> = ({ user, onDelete, onEdit }) => {
             {isEditing ? (
                 <>
                     <button onClick={handleSave} title="Save" style={{ cursor: "pointer" }}>✅</button>
-                    <button onClick={handleCancel} title="Cancel" style={{ cursor: "pointer" }}>❌</button>
+                    <button onClick={() => setIsEditing(false)} title="Cancel" style={{ cursor: "pointer" }}>❌</button>
                 </>
             ) : (
                 <button onClick={() => setIsEditing(true)} title="Edit" style={{ cursor: "pointer" }}>✏️</button>
             )}
 
-            <button onClick={() => onDelete(user.id)} title="Delete" style={{ cursor: "pointer" }}>🗑️</button>
+            <button onClick={handleDelete} title="Delete" style={{ cursor: "pointer" }}>🗑️</button>
         </li>
     );
 };
